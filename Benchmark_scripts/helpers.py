@@ -402,8 +402,25 @@ def merge_medrecon_count_on_edstay(df_master, df_medrecon):
     df_master.fillna({'n_medrecon': 0}, inplace=True)
     return df_master
 
-def merge_with_discharge_notes(df_master, df_discharge):
-    return pd.merge(df_master, df_discharge, on=['subject_id', 'hadm_id'], how='left')
+def merge_with_discharge_notes(df_master, df_discharge, drop_nulls=False):
+    """
+    Merge df_master with df_discharge on 'subject_id' and 'hadm_id'.
+    
+    Parameters:
+    df_master (pd.DataFrame): The master DataFrame.
+    df_discharge (pd.DataFrame): The discharge DataFrame.
+    drop_nulls (bool): If True, drop rows with null 'subject_id' or 'hadm_id' before merging.
+    
+    Returns:
+    pd.DataFrame: The merged DataFrame.
+    """
+    if drop_nulls:
+        df_master = df_master.dropna(subset=['subject_id', 'hadm_id']) # drop visits that did not result in a hospital visit
+        # df_discharge = df_discharge.dropna(subset=['subject_id', 'hadm_id'])
+
+    merged_df = pd.merge(df_master, df_discharge, on=['subject_id', 'hadm_id'], how='left')
+
+    return merged_df
 
 def merge_with_radiology_notes(df_master, df_radiology):
     return pd.merge(df_master, df_radiology, on=['subject_id', 'hadm_id'], how='left')
@@ -419,6 +436,8 @@ def merge_with_radiology_notes(df_master, df_radiology):
 
 
 def merge_with_image_data(df_master, image_metadata_csv):
+    df_master = df_master[df_master['study_id'].isin(image_metadata_csv['study_id'])]
+    
     image_metadata_csv['PStudyTime'] = image_metadata_csv['StudyTime'].apply(lambda x: f'{int(float(x)):06}' )
     image_metadata_csv['PStudyDateTime'] = pd.to_datetime(image_metadata_csv['StudyDate'].astype(str) + ' ' + image_metadata_csv['PStudyTime'].astype(str) ,format="%Y%m%d %H%M%S")
 
@@ -431,6 +450,7 @@ def merge_with_image_data(df_master, image_metadata_csv):
     right_on='intime',
     direction='backward'
     )
+
 
     merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
     return merged_df
