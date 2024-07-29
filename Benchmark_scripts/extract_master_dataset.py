@@ -2,6 +2,11 @@ import argparse
 from helpers import *
 from medcode_utils import commorbidity, extract_icd_list
 
+'''
+Sample usage: 
+nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-full-jul21-nohup/ &
+
+'''
 parser = argparse.ArgumentParser(description='Extract per-subject data from MIMIC-III CSV files.')
 
 parser.add_argument('--mimic4_path', type=str, help='Directory containing the main MIMIC-IV subdirectories: core, ed, hosp, icu, ed',required=True)
@@ -45,6 +50,17 @@ df_triage = read_triage_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['t
 df_vitalsign = read_vitalsign_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['vitalsign']))
 df_pyxis = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['pyxis']))
 df_medrecon = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['medrecon']))
+
+
+## join data with images as well as notes and other image data
+
+## first join data with notes discharge data.
+## we can use this for reattendance outcome, but not for the others
+df_discharge = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/discharge.csv')
+
+## join with radiology notes 
+df_radiology = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/radiology.csv')
+
 
 ## Read data here for ICD.
 df_diagnoses = read_diagnoses_table(os.path.join(mimic_iv_hosp_path, hosp_filename_dict['diagnoses_icd']))
@@ -108,5 +124,15 @@ df_master = merge_vitalsign_info_on_edstay(df_master, df_vitalsign, options=['la
 df_master = merge_med_count_on_edstay(df_master, df_pyxis)
 df_master = merge_medrecon_count_on_edstay(df_master, df_medrecon)
 
+
+# merge with the notes data
+df_master = merge_with_radiology_notes(df_master, df_radiology)
+df_master = merge_with_discharge_notes(df_master, df_discharge)
+
+# merge with the image data
+image_metadata_csv = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/mimic-cxr-2.0.0-metadata.csv') 
+df_master = merge_with_image_data(df_master, image_metadata_csv)
+
+
 # Output master_dataset
-df_master.to_csv(os.path.join(output_path, 'master_dataset.csv'), index=False)
+df_master.to_csv(os.path.join(output_path, 'master_dataset_multimodal_final_jul21.csv'), index=False)

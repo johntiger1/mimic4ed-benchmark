@@ -402,6 +402,49 @@ def merge_medrecon_count_on_edstay(df_master, df_medrecon):
     df_master.fillna({'n_medrecon': 0}, inplace=True)
     return df_master
 
+def merge_with_discharge_notes(df_master, df_discharge):
+    return pd.merge(df_master, df_discharge, on=['subject_id', 'hadm_id'], how='left')
+
+def merge_with_radiology_notes(df_master, df_radiology):
+    return pd.merge(df_master, df_radiology, on=['subject_id', 'hadm_id'], how='left')
+
+# def merge_with_radiology_notes(df_master, df_radiology):
+#     df_pyxis_fillna = df_pyxis.copy()
+#     df_pyxis_fillna['gsn'].fillna(df_pyxis['name'], inplace=True)
+#     grouped = df_pyxis_fillna.groupby(['stay_id'])
+#     df_medcount = grouped['gsn'].nunique().reset_index().rename({'gsn': 'n_med'}, axis=1)
+#     df_master = pd.merge(df_master, df_medcount, on='stay_id', how='left')
+#     df_master.fillna({'n_med': 0}, inplace=True)
+#     return df_master
+
+
+def merge_with_image_data(df_master, image_metadata_csv):
+    image_metadata_csv['PStudyTime'] = image_metadata_csv['StudyTime'].apply(lambda x: f'{int(float(x)):06}' )
+    image_metadata_csv['PStudyDateTime'] = pd.to_datetime(image_metadata_csv['StudyDate'].astype(str) + ' ' + image_metadata_csv['PStudyTime'].astype(str) ,format="%Y%m%d %H%M%S")
+
+    df_master['intime'] = pd.to_datetime(df_master['intime'])
+    df_master['outtime'] = pd.to_datetime(df_master['outtime'])
+    merged_df = pd.merge_asof(
+    image_metadata_csv.sort_values('PStudyDateTime'),
+    df_master.sort_values('intime'),
+    left_on='PStudyDateTime',
+    right_on='intime',
+    direction='backward'
+    )
+
+    merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
+    return merged_df
+
+
+def merge_med_count_on_edstay(df_master, df_pyxis):
+    df_pyxis_fillna = df_pyxis.copy()
+    df_pyxis_fillna['gsn'].fillna(df_pyxis['name'], inplace=True)
+    grouped = df_pyxis_fillna.groupby(['stay_id'])
+    df_medcount = grouped['gsn'].nunique().reset_index().rename({'gsn': 'n_med'}, axis=1)
+    df_master = pd.merge(df_master, df_medcount, on='stay_id', how='left')
+    df_master.fillna({'n_med': 0}, inplace=True)
+    return df_master
+
 def outlier_removal_imputation(column_type, vitals_valid_range):
     column_range = vitals_valid_range[column_type]
     def outlier_removal_imputation_single_value(x):
