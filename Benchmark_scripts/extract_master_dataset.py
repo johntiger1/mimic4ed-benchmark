@@ -4,7 +4,7 @@ from medcode_utils import commorbidity, extract_icd_list
 
 '''
 Sample usage: 
-nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-full-jul21-nohup/ &
+nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-fixed-aug13-final/ &
 
 '''
 parser = argparse.ArgumentParser(description='Extract per-subject data from MIMIC-III CSV files.')
@@ -19,6 +19,10 @@ args, _ = parser.parse_known_args()
 
 mimic_iv_path = args.mimic4_path
 output_path = args.output_path
+
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+
 icu_transfer_timerange = args.icu_transfer_timerange 
 next_ed_visit_timerange = args.next_ed_visit_timerange 
 

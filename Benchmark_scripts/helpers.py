@@ -436,11 +436,15 @@ def merge_with_radiology_notes(df_master, df_radiology):
 
 
 def merge_with_image_data(df_master, image_metadata_csv):
-    df_master = df_master[df_master['study_id'].isin(image_metadata_csv['study_id'])]
+    # df_master = df_master[df_master['study_id'].isin(image_metadata_csv['study_id'])]
     
     image_metadata_csv['PStudyTime'] = image_metadata_csv['StudyTime'].apply(lambda x: f'{int(float(x)):06}' )
     image_metadata_csv['PStudyDateTime'] = pd.to_datetime(image_metadata_csv['StudyDate'].astype(str) + ' ' + image_metadata_csv['PStudyTime'].astype(str) ,format="%Y%m%d %H%M%S")
 
+
+    df_master = df_master.merge(image_metadata_csv, how='inner', on='subject_id')
+
+    # from https://github.com/nyuad-cai/MedFuse/blob/main/datasets/fusion.py#L120-L126
     df_master['intime'] = pd.to_datetime(df_master['intime'])
     df_master['outtime'] = pd.to_datetime(df_master['outtime'])
     merged_df = pd.merge_asof(
@@ -448,9 +452,9 @@ def merge_with_image_data(df_master, image_metadata_csv):
     df_master.sort_values('intime'),
     left_on='PStudyDateTime',
     right_on='intime',
+    by='subject_id',
     direction='backward'
     )
-
 
     merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
     return merged_df
