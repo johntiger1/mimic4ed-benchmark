@@ -4,7 +4,7 @@ from medcode_utils import commorbidity, extract_icd_list
 
 '''
 Sample usage: 
-nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-fixed-aug13-final/ &
+nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-fixed-sep13-final/ &
 
 '''
 parser = argparse.ArgumentParser(description='Extract per-subject data from MIMIC-III CSV files.')
@@ -55,15 +55,16 @@ df_vitalsign = read_vitalsign_table(os.path.join(mimic_iv_ed_path, ed_filename_d
 df_pyxis = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['pyxis']))
 df_medrecon = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['medrecon']))
 
+EXTRACTED_CSVS_PATH = '/local/data/physionet.org/files/extracted_csvs/'
 
 ## join data with images as well as notes and other image data
 
 ## first join data with notes discharge data.
 ## we can use this for reattendance outcome, but not for the others
-df_discharge = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/discharge.csv')
+df_discharge = pd.read_csv(os.path.join(EXTRACTED_CSVS_PATH, 'discharge.csv'))
 
 ## join with radiology notes 
-df_radiology = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/radiology.csv')
+df_radiology = pd.read_csv('/local/data/physionet.org/files/extracted_csvs/radiology.csv')
 
 
 ## Read data here for ICD.
@@ -134,9 +135,9 @@ df_master = merge_with_radiology_notes(df_master, df_radiology)
 df_master = merge_with_discharge_notes(df_master, df_discharge)
 
 # merge with the image data
-image_metadata_csv = pd.read_csv('/local/data/jchen/physionet.org/files/extracted_csvs/mimic-cxr-2.0.0-metadata.csv') 
+image_metadata_csv = pd.read_csv('/local/data/physionet.org/files/extracted_csvs/mimic-cxr-2.0.0-metadata.csv') 
 df_master = merge_with_image_data(df_master, image_metadata_csv)
 
 
 # Output master_dataset
-df_master.to_csv(os.path.join(output_path, 'master_dataset_multimodal_final_jul21.csv'), index=False)
+df_master.to_csv(os.path.join(output_path, 'master_dataset_multimodal_final_sep13.csv'), index=False)

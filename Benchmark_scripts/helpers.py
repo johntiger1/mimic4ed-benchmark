@@ -442,11 +442,15 @@ def merge_with_image_data(df_master, image_metadata_csv):
     image_metadata_csv['PStudyDateTime'] = pd.to_datetime(image_metadata_csv['StudyDate'].astype(str) + ' ' + image_metadata_csv['PStudyTime'].astype(str) ,format="%Y%m%d %H%M%S")
 
 
-    df_master = df_master.merge(image_metadata_csv, how='inner', on='subject_id')
+    # df_master = df_master.merge(image_metadata_csv, how='inner', on='subject_id')
 
     # from https://github.com/nyuad-cai/MedFuse/blob/main/datasets/fusion.py#L120-L126
     df_master['intime'] = pd.to_datetime(df_master['intime'])
     df_master['outtime'] = pd.to_datetime(df_master['outtime'])
+    
+    print(merged_df.columns)
+    print('abc')
+
     merged_df = pd.merge_asof(
     image_metadata_csv.sort_values('PStudyDateTime'),
     df_master.sort_values('intime'),
@@ -456,7 +460,10 @@ def merge_with_image_data(df_master, image_metadata_csv):
     direction='backward'
     )
 
+    print(merged_df.columns)
+
     merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
+    
     return merged_df
 
 
