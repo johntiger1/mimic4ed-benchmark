@@ -63,9 +63,28 @@ EXTRACTED_CSVS_PATH = '/local/data/physionet.org/files/extracted_csvs/'
 ## we can use this for reattendance outcome, but not for the others
 df_discharge = pd.read_csv(os.path.join(EXTRACTED_CSVS_PATH, 'discharge.csv'))
 
+## rename some columns so that we don't run into same name columns
+
+df_discharge = df_discharge.rename(columns={
+    'charttime': 'charttime_discharge',
+    'note_id': 'note_id_discharge',
+    'note_seq': 'note_seq_discharge',
+    'note_type': 'note_type_discharge',
+    'storetime': 'storetime_discharge',
+    'text': 'text_discharge'
+})
+
 ## join with radiology notes 
 df_radiology = pd.read_csv('/local/data/physionet.org/files/extracted_csvs/radiology.csv')
 
+df_radiology = df_radiology.rename(columns={
+    'charttime': 'charttime_radiology',
+    'note_id': 'note_id_radiology',
+    'note_seq': 'note_seq_radiology',
+    'note_type': 'note_type_radiology',
+    'storetime': 'storetime_radiology',
+    'text': 'text_radiology'
+})
 
 ## Read data here for ICD.
 df_diagnoses = read_diagnoses_table(os.path.join(mimic_iv_hosp_path, hosp_filename_dict['diagnoses_icd']))
