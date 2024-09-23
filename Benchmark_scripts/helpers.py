@@ -460,11 +460,29 @@ def merge_with_image_data(df_master, image_metadata_csv):
     direction='backward'
     )
 
-    print(merged_df.columns)
+    unmatched_left = image_metadata_csv.loc[
+        ~image_metadata_csv['PStudyDateTime'].isin(merged_df['PStudyDateTime'])
+    ]
+
+    # Step 3: Identify unmatched rows from df_master (right DataFrame)
+    unmatched_right = df_master.loc[
+        ~df_master['intime'].isin(merged_df['intime'])
+    ]
+
+    # save these unmatched_csvs 
+    unmatched_left.to_csv('unmatched_image_data.csv', index=False) # Save unmatched rows from image_metadata_csv
+    unmatched_right.to_csv('unmatched_master.csv', index=False) # Save unmatched rows from df_master
 
     merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
-    
-    return merged_df
+
+    final_df = pd.concat([merged_df, unmatched_left, unmatched_right], ignore_index=True)
+
+    print('unmatched image rows', len(unmatched_left))
+    print('unmatched master rows', len(unmatched_right))
+    print('matched merged_df', len(merged_df))
+    print('total ensemble', len(final_df))
+
+    return final_df
 
 
 def merge_med_count_on_edstay(df_master, df_pyxis):

@@ -4,9 +4,16 @@ from medcode_utils import commorbidity, extract_icd_list
 
 '''
 Sample usage: 
-nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-fixed-sep13-final/ &
+
+(activate environment first)
+nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-sept23-full/ &
 
 '''
+
+FINAL_DATASET_PATH = 'master_dataset_multimodal_final_sep23.csv'
+EXTRACTED_CSVS_PATH = '/local/data/physionet.org/files/extracted_csvs/'
+
+
 parser = argparse.ArgumentParser(description='Extract per-subject data from MIMIC-III CSV files.')
 
 parser.add_argument('--mimic4_path', type=str, help='Directory containing the main MIMIC-IV subdirectories: core, ed, hosp, icu, ed',required=True)
@@ -55,7 +62,6 @@ df_vitalsign = read_vitalsign_table(os.path.join(mimic_iv_ed_path, ed_filename_d
 df_pyxis = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['pyxis']))
 df_medrecon = read_pyxis_table(os.path.join(mimic_iv_ed_path, ed_filename_dict['medrecon']))
 
-EXTRACTED_CSVS_PATH = '/local/data/physionet.org/files/extracted_csvs/'
 
 ## join data with images as well as notes and other image data
 
@@ -159,4 +165,4 @@ df_master = merge_with_image_data(df_master, image_metadata_csv)
 
 
 # Output master_dataset
-df_master.to_csv(os.path.join(output_path, 'master_dataset_multimodal_final_sep13.csv'), index=False)
+df_master.to_csv(os.path.join(output_path, FINAL_DATASET_PATH), index=False)
