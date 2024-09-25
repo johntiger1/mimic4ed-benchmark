@@ -437,7 +437,10 @@ def merge_with_radiology_notes(df_master, df_radiology):
 
 def merge_with_image_data(df_master, image_metadata_csv):
     # df_master = df_master[df_master['study_id'].isin(image_metadata_csv['study_id'])]
-    
+    output_dir = 'logging_output'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     image_metadata_csv['PStudyTime'] = image_metadata_csv['StudyTime'].apply(lambda x: f'{int(float(x)):06}' )
     image_metadata_csv['PStudyDateTime'] = pd.to_datetime(image_metadata_csv['StudyDate'].astype(str) + ' ' + image_metadata_csv['PStudyTime'].astype(str) ,format="%Y%m%d %H%M%S")
 
@@ -469,13 +472,17 @@ def merge_with_image_data(df_master, image_metadata_csv):
         ~df_master['intime'].isin(merged_df['intime'])
     ]
 
-    # save these unmatched_csvs 
-    unmatched_left.to_csv('unmatched_image_data.csv', index=False) # Save unmatched rows from image_metadata_csv
-    unmatched_right.to_csv('unmatched_master.csv', index=False) # Save unmatched rows from df_master
+
 
     merged_df = merged_df[(merged_df['PStudyDateTime'] >= merged_df['intime']) & (merged_df['PStudyDateTime'] <= merged_df['outtime'])]
 
     final_df = pd.concat([merged_df, unmatched_left, unmatched_right], ignore_index=True)
+
+    # save these unmatched_csvs 
+    unmatched_left.to_csv(os.path.join(output_dir, 'unmatched_image_data.csv'), index=False)  # Unmatched rows from image_metadata_csv
+    unmatched_right.to_csv(os.path.join(output_dir, 'unmatched_master.csv'), index=False)  # Unmatched rows from df_master
+    merged_df.to_csv(os.path.join(output_dir, 'merged_df.csv'), index=False)  # Save merged DataFrame
+    final_df.to_csv(os.path.join(output_dir, 'final_df.csv'), index=False)  # Save final concatenated DataFrame
 
     print('unmatched image rows', len(unmatched_left))
     print('unmatched master rows', len(unmatched_right))

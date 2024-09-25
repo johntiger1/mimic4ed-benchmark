@@ -6,11 +6,11 @@ from medcode_utils import commorbidity, extract_icd_list
 Sample usage: 
 
 (activate environment first)
-nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-sept23-full/ &
+nohup python Benchmark_scripts/extract_master_dataset.py --mimic4_path /local/home/jchen/code/mimic4ed-benchmark/data --output_path /local/data/jchen/physionet.org/files/mimic-iv-ed-sept25-full/ &
 
 '''
 
-FINAL_DATASET_PATH = 'master_dataset_multimodal_final_sep23.csv'
+FINAL_DATASET_PATH = 'master_dataset_multimodal_final_sep25.csv'
 EXTRACTED_CSVS_PATH = '/local/data/physionet.org/files/extracted_csvs/'
 
 
